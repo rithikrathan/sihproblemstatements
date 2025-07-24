@@ -2,20 +2,16 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
+	"log"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
-	"strconv"
 )
 
-type Problem struct {
-	ID        int    `json:"id"`
-	Category  string `json:"category"`
-	Number    int    `json:"number"`
-	Statement string `json:"statement"`
-}
-
 type Tag struct {
-	ProblemID int    `json:"problem_id"`
+	ProblemID int    `json:"Statement_id"`
 	Tag       string `json:"tag"`
 }
 
@@ -29,20 +25,47 @@ func main() {
 
 	// Get a problem by category and number
 	r.GET("/api/problem", func(c *gin.Context) {
-		category := c.Query("category")
-		statementID := c.Query("number")
-		rows, err := db.Query("SELECT * FROM test01 WHERE Statement_id = ?", statementID)
-		de	:q:q:q:q:	:q	
-		if err != nil{
-			panic(err)
+		// table := c.Query("table")
+		// query := fmt.Sprintf("SELECT * FROM %s WHERE Statement_id = ?",table)
+		query := fmt.Sprint("SELECT * FROM test01 WHERE Statement_id = ?")
+		statementID := c.Query("id")
+		rows, err := db.Query(query, statementID)
+		if err != nil {
+			log.Fatal(err)
 		}
-		for _, p := range problems {
-			if p.Category == category && p.Number == num {
-				c.JSON(200, gin.H{"id": p.ID, "statement": p.Statement})
-				return
-			}
+		defer rows.Close()
+
+		if !rows.Next() {
+			c.JSON(404, gin.H{"error": "Problem not found"})
+			return
 		}
-		c.JSON(404, gin.H{"error": "Problem not found"})
+
+		cols, err := rows.Columns()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		values := make([]interface{}, len(cols))
+		valuesPtr := make([]interface{}, len(cols))
+
+		for i := range values {
+			valuesPtr[i] = &values[i]
+		}
+
+		rows.Scan(valuesPtr...)
+
+		rowMap := make(map[string]interface{})
+
+		for i, col := range cols {
+			value := values[i]
+			rowMap[col] = value
+		}
+
+		if rows.Next() {
+			c.JSON(404, gin.H{"error": "Multiple rows found"})
+			return
+		}
+		c.JSON(200, rowMap)
 	})
 
 	// Add a tag to a problem
