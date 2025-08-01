@@ -3,21 +3,14 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"log"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type Tag struct {
-	ProblemID int    `json:"Statement_id"`
-	Tag       string `json:"tag"`
-}
-
 func main() {
 	r := gin.Default()
-	db, err := sql.Open("sqlite3", "../testdb")
+	db, err := sql.Open("sqlite3", "testdb")
 	if err != nil {
 		panic(err)
 	}
@@ -26,12 +19,14 @@ func main() {
 	// Get a problem by category and number
 	r.GET("/api/problem", func(c *gin.Context) {
 		// table := c.Query("table")
-		// query := fmt.Sprintf("SELECT * FROM %s WHERE Statement_id = ?",table)
-		query := fmt.Sprint("SELECT * FROM test01 WHERE Statement_id = ?")
+		table := "sihps2024"
+		query := fmt.Sprintf("SELECT * FROM %s WHERE Statement_id = ?", table)
+
 		statementID := c.Query("id")
 		rows, err := db.Query(query, statementID)
 		if err != nil {
-			log.Fatal(err)
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
 		}
 		defer rows.Close()
 
@@ -42,7 +37,8 @@ func main() {
 
 		cols, err := rows.Columns()
 		if err != nil {
-			log.Fatal(err)
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
 		}
 
 		values := make([]interface{}, len(cols))
@@ -69,34 +65,56 @@ func main() {
 	})
 
 	// Add a tag to a problem
-	r.POST("/api/tag", func(c *gin.Context) {
-		var body Tag
-		if err := c.BindJSON(&body); err != nil {
-			c.JSON(400, gin.H{"error": "Invalid JSON"})
+	r.POST("/api/add-tag", func(c *gin.Context) {
+		var input struct {
+			StatementID string `json:"statement_id"`
+			Tag         string `json:"tag"`
+			Username    string `json:"username"`
+		}
+
+		if err := c.BindJSON(&input); err != nil {
+			c.JSON(400, gin.H{"error": "Invalid input"})
 			return
 		}
-		tags = append(tags, body)
-		c.JSON(200, gin.H{"status": "tag added"})
-	})
 
-	// Get all tagged problems grouped by tag
-	r.GET("/api/tags", func(c *gin.Context) {
-		grouped := map[string][]gin.H{}
+		_, err := db.Exec(`INSERT INTO tags (statement_id, tag, username) VALUES (?, ?, ?)`,
+			input.StatementID, input.Tag, input.Username)
 
-		for _, t := range tags {
-			for _, p := range problems {
-				if p.ID == t.ProblemID {
-					grouped[t.Tag] = append(grouped[t.Tag], gin.H{
-						"id":        p.ID,
-						"category":  p.Category,
-						"number":    p.Number,
-						"statement": p.Statement,
-					})
-				}
-			}
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
 		}
 
-		c.JSON(200, grouped)
+		c.JSON(200, gin.H{"message": "Tag added successfully"})
+	})
+	// Get all tagged problems grouped by tag
+	r.GET("/api/user-tags/:username", func(c *gin.Context) {
+		username := c.Param("username")
+		tag := c.Query("tag") // ?tag=easy
+
+		rows, err := db.Query(`
+			SELECT s.Statement_id, s.title
+			FROM sihps2024 s
+			JOIN tags t ON s.Statement_id = t.statement_id
+			WHERE t.username = ? AND t.tag = ?`, username, tag)
+
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		defer rows.Close()
+
+		var results []gin.H
+		for rows.Next() {
+			var id, title string
+			rows.Scan(&id, &title)
+			results = append(results, gin.H{
+				"statement_id": id,
+				"title":        title,
+			})
+		}
+
+		c.JSON(200, results)
 	})
 
 	r.Run(":5000")
