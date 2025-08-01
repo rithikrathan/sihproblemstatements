@@ -117,5 +117,28 @@ func main() {
 		c.JSON(200, results)
 	})
 
+	r.POST("/api/delete-tag", func(c *gin.Context) {
+		var input struct {
+			StatementID string `json:"statement_id"`
+			Tag         string `json:"tag"`
+			Username    string `json:"username"`
+		}
+
+		if err := c.BindJSON(&input); err != nil {
+			c.JSON(400, gin.H{"error": "Invalid input"})
+			return
+		}
+
+		_, err := db.Exec(`DELETE FROM tags WHERE statement_id = ? AND username = ? AND tag = ?`,
+			input.StatementID, input.Username, input.Tag)
+
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(200, gin.H{"message": "Tag deleted"})
+	})
+
 	r.Run(":5000")
 }
