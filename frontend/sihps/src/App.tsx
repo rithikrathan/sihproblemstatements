@@ -1,105 +1,140 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
 
-type Problem = {
-  id: number
-  category: string
-  number: number
-  statement: string
+const App = () => {
+	const [data, setData] = useState<any>(null)
+	const [statement_id, setSid] = useState("")
+	const [username, setUname] = useState("")
+	const [statements, setStatements] = useState([])
+	const [tag, setTag] = useState("")
+	const [test, setTest] = useState()
+	const [mode, setMode] = useState("hello")
+
+	// GET /api/problem?id=xxxxx   => gets problem by id
+	//
+	// GET /api/usertags/kkkkk?tag=yyyyy => gets all problems of the given tag specific to a user
+	//
+	// POST /api/add-tag
+	// Body: {
+	// "statement_id": "xxxxx"
+	// "tag": "yyyyy"
+	// "username": "kkkkk"
+	// } => adds a tag bro just read the thing no need for me to expain things
+	//
+	// POST /api/delete-tag
+	// Body: {
+	// "statement_id": "xxxxx"
+	// "tag": "yyyyy"
+	// "username": "kkkkk"
+	// }
+
+	// useEffect(() => {
+	// 	// axios.get("/api/problem?id=SIH1678")
+	// 	axios.get(`/api/problem?id=${statement_id}`)
+	// 		.then((res) => {
+	// 			console.log("Fetched", res.data)
+	// 			setData(res.data)
+	// 		})
+	// 		.catch(err => console.error(err))
+	// }, [statement_id])
+
+	const toggle = () => {
+		setMode(prev => (prev === "hello" ? "idiots" : "hello"))
+	}
+
+	const fetchStatement = async () => {
+		if (statement_id == "") {
+			return
+		}
+
+		await axios.get(`/api/problem?id=${statement_id}`)
+			.then((res) => {
+				console.log("Fetched", res.data)
+				setData(res.data)
+			})
+			.catch(err => console.error(err))
+	}
+
+	const getByTag = async () => {
+		await axios.get(`/api/user-tags/${username}?tag=${tag}`)
+			.then((res) => {
+				console.log("Fetched", res.data)
+				setStatements(res.data)
+			})
+			.catch(err => console.error(err))
+	}
+
+	const addTag = async () => {
+		try {
+			const res = await axios.post('/api/add-tag', {
+				"statement_id": statement_id,
+				"tag": tag,
+				"username": username
+			})
+			console.log(res.data)
+			setTest(res.data)
+		} catch (err) {
+			console.error(err)
+		}
+	}
+
+	const removeTag = async () => {
+		try {
+			const res = await axios.post('/api/delete-tag', {
+				"statement_id": statement_id,
+				"tag": tag,
+				"username": username
+			})
+			console.log(res.data)
+			setTest(res.data)
+		} catch (err) {
+			console.error(err)
+		}
+	}
+
+	return (
+		<div>
+			<div className="inputs">
+				<label htmlFor="username">Username: </label>
+				<input type="text"
+					value={username}
+					id="username"
+					onChange={(e) => setUname(e.target.value)}
+				/>
+				<br />
+				<label htmlFor="sid">Statement id: </label>
+				<input type="text"
+					value={statement_id}
+					id="sid"
+					onChange={(e) => setSid(e.target.value)}
+				/>
+				<button onClick={fetchStatement}>ok</button>
+				<br />
+				<hr />
+				<label htmlFor="tagSel">Tag: </label>
+				<select name="tag" id="tagSel"
+					onChange={(e) => setTag(e.target.value)}>
+					<option value="">Select a tag</option>
+					<option value="test1">test1</option>
+					<option value="test2">test2</option>
+					<option value="test3">test3</option>
+					<option value="test4">test4</option>
+				</select>
+				<button onClick={addTag}>set tag</button>
+				<button onClick={removeTag}>remove tag</button>
+				<button onClick={getByTag}>get tagged statements</button>
+				<button onClick={toggle}>toggle</button>
+				<hr />
+				<br />
+			</div>
+
+			<p>Title: {data?.Title}</p>
+			<p>Id: {statement_id}, Username: {username}, tag: {tag}, mode: {mode}</p>
+			<pre>{JSON.stringify(data, null, 2)}</pre>
+			<pre>{JSON.stringify(test, null, 2)}</pre>
+			<pre>{JSON.stringify(statements, null, 2)}</pre>
+		</div>
+	)
 }
-
-type TaggedGroup = {
-  [tag: string]: Problem[]
-}
-
-function App() {
-  const [category, setCategory] = useState<"hardware" | "software">("hardware")
-  const [number, setNumber] = useState<string>("")
-  const [statement, setStatement] = useState<string>("")
-  const [problemId, setProblemId] = useState<number | null>(null)
-  const [tagged, setTagged] = useState<TaggedGroup>({})
-  const [error, setError] = useState<string>("")
-
-  const getStatement = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/problem", {
-        params: { category, number },
-      })
-      setStatement(res.data.statement)
-      setProblemId(res.data.id)
-      setError("")
-    } catch {
-      setStatement("")
-      setProblemId(null)
-      setError("Problem not found.")
-    }
-  }
-
-  const tagProblem = async (tag: string) => {
-    if (!problemId) return
-    await axios.post("http://localhost:5000/api/tag", {
-      problem_id: problemId,
-      tag,
-    })
-    fetchTags()
-  }
-
-  const fetchTags = async () => {
-    const res = await axios.get("http://localhost:5000/api/tags")
-    setTagged(res.data)
-  }
-
-  useEffect(() => {
-    fetchTags()
-  }, [])
-
-  return (
-    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      <h1>Hackathon Problem Viewer</h1>
-
-      <div style={{ marginBottom: "1rem", display: "flex", gap: "0.5rem" }}>
-        <select value={category} onChange={(e) => setCategory(e.target.value as "hardware" | "software")}>
-          <option value="hardware">Hardware</option>
-          <option value="software">Software</option>
-        </select>
-
-        <input
-          type="number"
-          placeholder="Project Number"
-          value={number}
-          onChange={(e) => setNumber(e.target.value)}
-        />
-
-        <button onClick={getStatement}>Get Statement</button>
-      </div>
-
-      {statement && (
-        <div style={{ marginBottom: "1rem" }}>
-          <strong>Problem Statement:</strong>
-          <p>{statement}</p>
-          <button onClick={() => tagProblem("selected")}>✅ Selected</button>
-          <button onClick={() => tagProblem("need_to_discuss")}>💬 Need to Discuss</button>
-        </div>
-      )}
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      <hr />
-
-      <h2>Tagged Problems</h2>
-      {Object.entries(tagged).map(([tag, problems]) => (
-        <div key={tag}>
-          <h3>{tag.toUpperCase()}</h3>
-          {problems.map((p) => (
-            <div key={p.id} style={{ marginBottom: "0.5rem", padding: "0.5rem", background: "#f0f0f0" }}>
-              <strong>{p.category} #{p.number}</strong>
-              <p>{p.statement}</p>
-            </div>
-          ))}
-        </div>
-      ))}
-    </div>
-  )
-}
-
 export default App
+

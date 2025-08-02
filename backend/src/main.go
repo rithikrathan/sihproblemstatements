@@ -85,7 +85,7 @@ func main() {
 			return
 		}
 
-		c.JSON(200, gin.H{"message": "Tag added successfully"})
+		c.JSON(200, gin.H{"message": "Tag added successfully", "uname": input.Username, "id": input.StatementID, "tag": input.Tag})
 	})
 	// Get all tagged problems grouped by tag
 	r.GET("/api/user-tags/:username", func(c *gin.Context) {
@@ -137,7 +137,7 @@ func main() {
 			return
 		}
 
-		c.JSON(200, gin.H{"message": "Tag deleted"})
+		c.JSON(200, gin.H{"message": "Tag deleted successfully", "uname": input.Username, "id": input.StatementID, "tag": input.Tag})
 	})
 
 	r.Run(":5000")
