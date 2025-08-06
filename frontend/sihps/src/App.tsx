@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
+import "./App.css"
 
 const App = () => {
-	const [data, setData] = useState<any>(null)
+	const [data, setData] = useState<any>("{}")
 	const [statement_id, setSid] = useState("")
 	const [username, setUname] = useState("")
 	const [statements, setStatements] = useState([])
 	const [tag, setTag] = useState("")
-	const [test, setTest] = useState()
 	const [mode, setMode] = useState("hello")
 
+
+	//
 	// GET /api/problem?id=xxxxx   => gets problem by id
 	//
 	// GET /api/usertags/kkkkk?tag=yyyyy => gets all problems of the given tag specific to a user
@@ -72,7 +74,6 @@ const App = () => {
 				"username": username
 			})
 			console.log(res.data)
-			setTest(res.data)
 		} catch (err) {
 			console.error(err)
 		}
@@ -86,7 +87,6 @@ const App = () => {
 				"username": username
 			})
 			console.log(res.data)
-			setTest(res.data)
 		} catch (err) {
 			console.error(err)
 		}
@@ -114,7 +114,7 @@ const App = () => {
 				<label htmlFor="tagSel">Tag: </label>
 				<select name="tag" id="tagSel"
 					onChange={(e) => setTag(e.target.value)}>
-					<option value="">Select a tag</option>
+					<option value="">none</option>
 					<option value="test1">test1</option>
 					<option value="test2">test2</option>
 					<option value="test3">test3</option>
@@ -123,16 +123,27 @@ const App = () => {
 				<button onClick={addTag}>set tag</button>
 				<button onClick={removeTag}>remove tag</button>
 				<button onClick={getByTag}>get tagged statements</button>
-				<button onClick={toggle}>toggle</button>
+				<button onClick={toggle}>{mode}</button>
 				<hr />
-				<br />
 			</div>
-
-			<p>Title: {data?.Title}</p>
-			<p>Id: {statement_id}, Username: {username}, tag: {tag}, mode: {mode}</p>
-			<pre>{JSON.stringify(data, null, 2)}</pre>
-			<pre>{JSON.stringify(test, null, 2)}</pre>
-			<pre>{JSON.stringify(statements, null, 2)}</pre>
+			<div className="outputs">
+				<div style={{ display: mode === "hello" ? "block" : "none" }}>
+					<h1>{data.Title} [{data.Statement_id}]</h1>
+					<h2>Description:</h2>
+					<p>{data.Description}</p>
+					<h2>Details:</h2>
+					<p>
+						Category: {data.Category} <br />
+						Organisation: {data.Organisation} <br />
+						Technology Bucket: {data.Technology_Bucket} <br />
+						Dataset file: {data.Datasetfile}
+					</p>
+				</div>
+				<div style={{ display: mode === "idiots" ? "block" : "none" }}>
+					<h2>Statements tagged {tag}:</h2>
+					<pre>{JSON.stringify(statements, null, 2)}</pre>
+				</div>
+			</div>
 		</div>
 	)
 }
