@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
 import "./App.css"
+import StatementList from "./statementList"
 
 const App = () => {
 	const [data, setData] = useState<any>("{}")
@@ -44,15 +45,16 @@ const App = () => {
 		setMode(prev => (prev === "hello" ? "idiots" : "hello"))
 	}
 
-	const fetchStatement = async () => {
-		if (statement_id == "") {
+	const fetchStatement = async (id: string) => {
+		if (id == "") {
 			return
 		}
 
-		await axios.get(`/api/problem?id=${statement_id}`)
+		await axios.get(`/api/problem?id=${id}`)
 			.then((res) => {
 				console.log("Fetched", res.data)
 				setData(res.data)
+				setMode("hello")
 			})
 			.catch(err => console.error(err))
 	}
@@ -62,6 +64,7 @@ const App = () => {
 			.then((res) => {
 				console.log("Fetched", res.data)
 				setStatements(res.data)
+				setMode("idiots")
 			})
 			.catch(err => console.error(err))
 	}
@@ -108,7 +111,7 @@ const App = () => {
 					id="sid"
 					onChange={(e) => setSid(e.target.value)}
 				/>
-				<button onClick={fetchStatement}>ok</button>
+				<button onClick={() => fetchStatement(statement_id)}>ok</button>
 				<br />
 				<hr />
 				<label htmlFor="tagSel">Tag: </label>
@@ -141,7 +144,12 @@ const App = () => {
 				</div>
 				<div style={{ display: mode === "idiots" ? "block" : "none" }}>
 					<h2>Statements tagged {tag}:</h2>
-					<pre>{JSON.stringify(statements, null, 2)}</pre>
+					<StatementList
+						statements={statements}
+						onItemClick={(id) => {
+							fetchStatement(id)
+						}}
+					/>
 				</div>
 			</div>
 		</div>

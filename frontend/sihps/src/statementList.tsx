@@ -1,24 +1,32 @@
-import React from "react"
+import React from "react";
+import "./statementList.css"; // Import the CSS file
 
-function StatementList({ statements, setMode }) {
+type Statement = {
+	statement_id: string;
+	title: string;
+};
+
+type StatementListProps = {
+	statements: Statement[];
+	onItemClick?: (id: string) => void
+};
+
+function StatementList({ statements, onItemClick }: StatementListProps) {
 	return (
-		<div style={{ maxHeight: "300px", overflowY: "auto", border: "1px solid #ccc", padding: "10px" }}>
-			<ul style={{listStyle:"none"}}>
+		<div className="statement-list-container">
+			<ul className="statement-list">
 				{statements.map((statement) => (
-					<li
-						key={statement.statement_id}
-						style={{
-							cursor:"pointer",
-							padding:"8px",
-							borderBottom:"1px solit #ccc"
-						}}
+					<li key={statement.statement_id}
+						className="statement-item"
+						onClick={() => onItemClick?.(statement.statement_id)}
 					>
-					{statement.Title}
+						{statement.title}
 					</li>
 				))}
 			</ul>
 		</div>
-	)
+	);
 }
 
-return default StatementList
+export default StatementList;
+
