@@ -1,17 +1,219 @@
+/* Root container */
 #root {
 	max-width: 970px;
+	height: 100%;
 	margin: 0 auto;
 	padding: 2rem;
 	text-align: left;
 }
 
-.inputs {
+/* Body & base styles */
+body {
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	margin: 0;
+	padding: 0;
+	background: linear-gradient(135deg, #000000, #1a0000);
+	color: #ffe6e6;
+	/* light pink text */
+}
+
+/* App container */
+.app-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 2rem;
+	min-height: 100vh;
+	/* Ensures it fills full height of screen */
+	box-sizing: border-box;
+}
+
+
+/* Form section as header with dark background */
+.form-section {
+	background: #1a0000;
+	padding: 1rem 1.5rem;
+	border-radius: 12px;
+	box-shadow: 0 4px 12px rgba(255, 38, 38, 0.6);
+	width: 100%;
+	max-width: 970px;
+	margin-bottom: 1.5rem;
+	color: #ffe6e6;
+}
+
+/* Form inline groups */
+.form-inline {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 1rem;
+}
+
+/* Form groups */
+.form-group {
+	display: flex;
+	flex-direction: column;
+	margin: 0;
+}
+
+.form-group label {
+	font-weight: 600;
+	margin-bottom: 0.3rem;
+	color: #ff2626;
+	/* NO text-shadow here */
+}
+
+/* Inputs and selects */
+.form-group input,
+.form-group select {
+	padding: 0.5rem 1rem;
+	border: 2px solid #bd1616;
+	border-radius: 8px;
+	font-size: 1rem;
+	background-color: #330000;
+	color: #ffe6e6;
+	transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-group input::placeholder,
+.form-group select::placeholder {
+	color: #ff9999;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+	outline: none;
+	border-color: #ff2626;
+	box-shadow: 0 0 10px #ff2626aa;
+	background-color: #440000;
+	color: #ffe6e6;
+}
+
+
+button {
+	padding: 0.6rem 1.2rem;
+	font-size: 0.95rem;
+	border-radius: 8px;
+	border: none;
+	cursor: pointer;
+	color: #ffe6e6;
+	background: linear-gradient(135deg, #8b1414, #5c0d0d);
+	/* stronger contrast */
+	box-shadow: none;
+	transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.3s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+button:hover {
+	background: linear-gradient(135deg, #ff3b3b, #d12727);
+	transform: translateY(-1.5px);
+	box-shadow:
+		0 0 15px #ff2626aa;
+}
+
+button:active {
+	transform: translateY(1px);
+	box-shadow: none;
+	background: linear-gradient(135deg, #6b0e0e, #470909);
+	/* darker on click */
+	transition: transform 0.05s ease, background 0.1s ease;
+}
+
+
+/* Button group layout */
+.button-group {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	margin-top: 1rem;
+}
+
+/* Output section */
+.output-section {
+	width: 100%;
+	max-width: 970px;
+	background: #220000;
+	padding: 2rem 2.5rem;
+	border-radius: 12px;
+	box-shadow: 0 6px 18px rgba(255, 38, 38, 0.5);
+	color: #ffe6e6;
+}
+
+/* Statement headings - clean text, no glow */
+.statement-details h1 {
+	font-size: 1.8rem;
+	color: #ff2626;
+	margin-bottom: 1rem;
+	/* NO text-shadow */
+}
+
+.statement-details h2 {
+	margin-top: 1.5rem;
+	color: #bd1616;
+	/* NO text-shadow */
+}
+
+/* Statement list */
+.app-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 2rem;
+	min-height: 100vh;
+	/* Ensures it fills full height of screen */
+	box-sizing: border-box;
+}
+
+.statement-list {
+	margin-top: 1.5rem;
+}
+
+/* Horizontal rule with subtle red */
+hr {
+	margin: 1rem 0;
+	border: none;
+	border-top: 2px solid #bd1616;
+	opacity: 0.7;
+}
+
+
+.scroll-to-top {
+	position: fixed;
+	bottom: 50px;
+	right: 50px;
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+	background: linear-gradient(135deg, #ff2626, #bd1616);
+	color: #fff;
+	font-size: 24px;
+	cursor: pointer;
+	box-shadow: 0 0 6px #bd1616aa;
+	transition: opacity 0.3s ease, transform 0.2s ease;
+	z-index: 1000;
+	opacity: 1;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 0;
 	text-align: center;
 }
 
-p,
-h1 {
-	white-space: normal;
-	overflow-wrap: break-word;
-	word-wrap: break-word;
+.scroll-to-top:hover {
+	background: linear-gradient(135deg, #ff3b3b, #d12727);
+	transform: translateY(-2px);
+	box-shadow: 0 0 10px #ff2626aa;
+}
+
+
+.scroll-to-top:hover {
+	background: linear-gradient(135deg, #ff3b3b, #d12727);
+	transform: translateY(-2px);
+	box-shadow: 0 0 20px #ff2626aa;
+}
+
+.uptop {
+	height: 50px;
+	width: 50px;
 }

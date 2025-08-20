@@ -7,7 +7,7 @@ type Statement = {
 };
 
 type StatementListProps = {
-	statements: Statement[];
+	statements?: Statement[];
 	onItemClick?: (id: string) => void
 };
 
@@ -15,7 +15,7 @@ function StatementList({ statements, onItemClick }: StatementListProps) {
 	return (
 		<div className="statement-list-container">
 			<ul className="statement-list">
-				{statements.map((statement) => (
+				{statements?.map((statement) => (
 					<li key={statement.statement_id}
 						className="statement-item"
 						onClick={() => onItemClick?.(statement.statement_id)}

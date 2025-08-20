@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
 import "./App.css"
+import arrowUp from "./assets/arrows-up.png"
 import StatementList from "./statementList"
 
 const App = () => {
@@ -10,6 +11,7 @@ const App = () => {
 	const [statements, setStatements] = useState([])
 	const [tag, setTag] = useState("")
 	const [mode, setMode] = useState("hello")
+	const [showScrollTop, setShowScrollTop] = useState(false)
 
 
 	//
@@ -31,19 +33,24 @@ const App = () => {
 	// "username": "kkkkk"
 	// }
 
-	// useEffect(() => {
-	// 	// axios.get("/api/problem?id=SIH1678")
-	// 	axios.get(`/api/problem?id=${statement_id}`)
-	// 		.then((res) => {
-	// 			console.log("Fetched", res.data)
-	// 			setData(res.data)
-	// 		})
-	// 		.catch(err => console.error(err))
-	// }, [statement_id])
+	useEffect(() => {
+		if (tag !== "") {
+			getByTag()
+		}
+	}, [tag])
 
-	const toggle = () => {
-		setMode(prev => (prev === "hello" ? "idiots" : "hello"))
-	}
+	useEffect(() => {
+		const handleScroll = () => {
+			setShowScrollTop(window.scrollY > 100); // Show when scrolled down
+		};
+
+		window.addEventListener('scroll', handleScroll);
+		return () => window.removeEventListener('scroll', handleScroll);
+	}, []);
+
+	// const toggle = () => {
+	// 	setMode(prev => (prev === "hello" ? "idiots" : "hello"))
+	// }
 
 	const fetchStatement = async (id: string) => {
 		if (id == "") {
@@ -64,7 +71,7 @@ const App = () => {
 			.then((res) => {
 				console.log("Fetched", res.data)
 				setStatements(res.data)
-				setMode("idiots")
+				// setMode("idiots")
 			})
 			.catch(err => console.error(err))
 	}
@@ -76,6 +83,7 @@ const App = () => {
 				"tag": tag,
 				"username": username
 			})
+			getByTag()
 			console.log(res.data)
 		} catch (err) {
 			console.error(err)
@@ -89,6 +97,7 @@ const App = () => {
 				"tag": tag,
 				"username": username
 			})
+			getByTag()
 			console.log(res.data)
 		} catch (err) {
 			console.error(err)
@@ -96,64 +105,107 @@ const App = () => {
 	}
 
 	return (
-		<div>
-			<div className="inputs">
-				<label htmlFor="username">Username: </label>
-				<input type="text"
-					value={username}
-					id="username"
-					onChange={(e) => setUname(e.target.value)}
-				/>
-				<br />
-				<label htmlFor="sid">Statement id: </label>
-				<input type="text"
-					value={statement_id}
-					id="sid"
-					onChange={(e) => setSid(e.target.value)}
-				/>
-				<button onClick={() => fetchStatement(statement_id)}>ok</button>
-				<br />
-				<hr />
-				<label htmlFor="tagSel">Tag: </label>
-				<select name="tag" id="tagSel"
-					onChange={(e) => setTag(e.target.value)}>
-					<option value="">none</option>
-					<option value="test1">test1</option>
-					<option value="test2">test2</option>
-					<option value="test3">test3</option>
-					<option value="test4">test4</option>
-				</select>
-				<button onClick={addTag}>set tag</button>
-				<button onClick={removeTag}>remove tag</button>
-				<button onClick={getByTag}>get tagged statements</button>
-				<button onClick={toggle}>{mode}</button>
-				<hr />
-			</div>
-			<div className="outputs">
-				<div style={{ display: mode === "hello" ? "block" : "none" }}>
-					<h1>{data.Title} [{data.Statement_id}]</h1>
-					<h2>Description:</h2>
-					<p>{data.Description}</p>
-					<h2>Details:</h2>
-					<p>
-						Category: {data.Category} <br />
-						Organisation: {data.Organisation} <br />
-						Technology Bucket: {data.Technology_Bucket} <br />
-						Dataset file: {data.Datasetfile}
-					</p>
+		<div className="app-container">
+			<div className="form-section">
+				{/* Row 1: Username, Statement ID, Fetch */}
+				<div className="form-inline">
+					<div className="form-group">
+						<label htmlFor="username">Username:</label>
+						<input
+							type="text"
+							id="username"
+							value={username}
+							onChange={(e) => setUname(e.target.value)}
+						/>
+					</div>
+
+					<div className="form-group">
+						<label htmlFor="sid">Statement ID:</label>
+						<input
+							type="text"
+							id="sid"
+							value={statement_id}
+							onChange={(e) => setSid(e.target.value)}
+						/>
+					</div>
+
+					<button onClick={() => fetchStatement(statement_id)}>Fetch</button>
 				</div>
-				<div style={{ display: mode === "idiots" ? "block" : "none" }}>
-					<h2>Statements tagged {tag}:</h2>
-					<StatementList
-						statements={statements}
-						onItemClick={(id) => {
-							fetchStatement(id)
-						}}
-					/>
+
+				<hr />
+
+				{/* Row 2: Tag select and buttons */}
+				<div className="form-inline">
+					<div className="form-group">
+						<label htmlFor="tagSel">Tag:</label>
+						<select
+							id="tagSel"
+							value={tag}
+							onChange={(e) => setTag(e.target.value)}
+						>
+							<option value="">None</option>
+							<option value="test1">test1</option>
+							<option value="test2">test2</option>
+							<option value="test3">test3</option>
+							<option value="test4">test4</option>
+						</select>
+					</div>
+
+					<div className="button-group">
+						<button onClick={addTag}>Set Tag</button>
+						<button onClick={removeTag}>Remove Tag</button>
+						<button onClick={getByTag}>Get Tagged</button>
+						<button onClick={() => setMode(mode === "hello" ? "idiots" : "hello")}>
+							Switch to {mode === "hello" ? "Tagged" : "Statement"} View
+						</button>
+					</div>
 				</div>
 			</div>
+
+			<div className="output-section">
+				{mode === "hello" && data && (
+					<div className="statement-details">
+						<h1>
+							{data.Title} [{data.Statement_id}]
+						</h1>
+						<h2>Description</h2>
+						<p>{data.Description}</p>
+
+						<h2>Details</h2>
+						<p>
+							<strong>Category:</strong> {data.Category} <br />
+							<strong>Organisation:</strong> {data.Organisation} <br />
+							<strong>Technology Bucket:</strong> {data.Technology_Bucket} <br />
+							<strong>Dataset File:</strong> {data.Datasetfile}
+						</p>
+					</div>
+				)}
+
+				{mode === "idiots" && (
+					<div className="statement-list">
+						<h2>Statements tagged: {tag}</h2>
+						<StatementList
+							statements={statements}
+							onItemClick={(id) => {
+								fetchStatement(id);
+								setSid(id);
+							}}
+						/>
+					</div>
+				)}
+			</div>
+			{showScrollTop && (
+				<button
+					className="scroll-to-top"
+					onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+				>
+					<img src={arrowUp} alt="^" className="uptop" />
+				</button>
+			)}
 		</div>
-	)
+	);
+
 }
+
 export default App
 
